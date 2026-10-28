@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stand CarF + Tesla · Vendas</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8ecef;--panel:#f7f9fa;--ink:#14212b;--mute:#5d6b76;--line:#cfd7dc;--acc:#0f5c6e;--accInk:#fff;--warn:#b8650f;--bot:#dcebee;--me:#e0e4e8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161b;--panel:#17212a;--ink:#e6edf1;--mute:#93a2ad;--line:#2b3a45;--acc:#4fb3c9;--accInk:#08222a;--warn:#e69a4a;--bot:#173540;--me:#243340}}
+:root[data-theme="dark"]{--bg:#0f161b;--panel:#17212a;--ink:#e6edf1;--mute:#93a2ad;--line:#2b3a45;--acc:#4fb3c9;--accInk:#08222a;--warn:#e69a4a;--bot:#173540;--me:#243340}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Archivo,system-ui,sans-serif}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);display:grid;grid-template-columns:1.25fr 1fr;gap:16px;padding:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:0}
+.main{padding:26px;display:flex;flex-direction:column;gap:22px;overflow:auto}
+h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
+.sub{color:var(--mute);font-size:14px;margin-top:2px}
+.goal .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.big{font-size:64px;font-weight:800;line-height:1;letter-spacing:-2px}
+.big small{font-size:22px;font-weight:600;color:var(--mute);letter-spacing:0}
+.bar{height:14px;background:var(--bg);border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .5s}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.kpi b{display:block;font-size:24px;font-weight:800}
+.kpi span{font-size:13px;color:var(--mute)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--mute);font-size:13px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:11px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n{font-weight:600}
+.low{color:var(--warn);font-weight:600}
+.tag{display:inline-block;font-size:12px;border:1px solid var(--acc);color:var(--acc);border-radius:4px;padding:1px 6px;margin-left:6px}
+.chat{display:flex;flex-direction:column;overflow:hidden}
+.ch{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.box{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.m{max-width:88%;padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.45;white-space:pre-line}
+.u{background:var(--me);align-self:flex-end}
+.b{background:var(--bot);border:1px solid var(--acc);align-self:flex-start}
+.ia{display:flex;gap:8px;padding:14px;border-top:1px solid var(--line)}
+input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:12px;border-radius:8px;font-size:14px}
+input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{background:var(--acc);color:var(--accInk);border:0;padding:0 20px;border-radius:8px;font-weight:600;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 12px}
+.chips button{background:transparent;color:var(--ink);border:1px solid var(--line);padding:5px 10px;font-weight:400;font-size:13px}
+@media (max-width:820px){html,body{height:auto}body{grid-template-columns:1fr}.chat{height:70vh}.big{font-size:48px}}
+</style>
+</head>
+<body>
+<section class="main">
+  <div><h1>Stand CarF + Tesla</h1><p class="sub">Tesla encomendados via tesla.com · outubro 2026</p></div>
+  <div class="goal">
+    <div class="row"><div class="big"><span id="sold">0</span><small> / <span id="goal">0</span> carros</small></div><div class="sub" id="pct"></div></div>
+    <div class="bar"><i id="fill"></i></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><b id="rev">0</b><span>Faturação</span></div>
+    <div class="kpi"><b id="leads">0</b><span>Leads ativas</span></div>
+    <div class="kpi"><b id="td">0</b><span>Test drives</span></div>
+  </div>
+  <div class="tw"><table><thead><tr><th>Modelo</th><th>Preço</th><th>Vendidos</th><th>Stock / Encomendas</th></tr></thead><tbody id="rows"></tbody></table></div>
+</section>
+
+<section class="chat">
+  <div class="ch"><div class="dot"></div><strong>Copiloto do Stand</strong><span class="sub">assistente do gestor</span></div>
+  <div class="box" id="box">
+    <div class="m b">Olá! Sou o copiloto de vendas do stand (CarF e Tesla). Diga-me o que aconteceu hoje no stand e eu atualizo o painel.</div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="ia"><input id="in" placeholder="Ex.: vendi um Trail" autocomplete="off"><button id="send">Enviar</button></div>
+</section>
+
+<script>
+const S={goal:45,leads:62,td:18,models:[
+ {brand:"CarF",n:"Urban",price:21900,sold:9,stock:14,promo:0},
+ {brand:"CarF",n:"Trail",price:29900,sold:6,stock:8,promo:0},
+ {brand:"CarF",n:"Volt",price:34500,sold:4,stock:5,promo:0},
+ {brand:"Tesla",n:"Model 3",price:39990,sold:7,ord:3,promo:0},
+ {brand:"Tesla",n:"Model Y",price:44990,sold:5,ord:4,promo:0}]};
+const eur=v=>v.toLocaleString("pt-PT")+" €";
+const $=id=>document.getElementById(id);
+const total=()=>S.models.reduce((a,m)=>a+m.sold,0);
+const find=t=>S.models.find(m=>t.includes(m.n.toLowerCase()));
+
+function render(){
+  const t=total(),p=Math.min(100,Math.round(t/S.goal*100));
+  $("sold").textContent=t;$("goal").textContent=S.goal;$("pct").textContent=p+"% da meta";
+  $("fill").style.width=p+"%";
+  $("rev").textContent=eur(S.models.reduce((a,m)=>a+m.sold*Math.round(m.price*(1-m.promo/100)),0));
+  $("leads").textContent=S.leads;$("td").textContent=S.td;
+  const tb=$("rows");tb.textContent="";
+  S.models.forEach(m=>{
+    const tr=document.createElement("tr");
+    const c=[m.brand+" "+m.n,eur(Math.round(m.price*(1-m.promo/100))),m.sold,m.brand==="Tesla"?m.ord+" por entregar (tesla.com)":m.stock+(m.stock<=3?" (baixo)":"")];
+    c.forEach((v,i)=>{const td=document.createElement("td");td.textContent=v;if(i==0){td.className="n";if(m.promo){const s=document.createElement("span");s.className="tag";s.textContent="-"+m.promo+"%";td.appendChild(s)}}
+      if(i==3&&m.stock<=3)td.className="low";tr.appendChild(td)});
+    tb.appendChild(tr);
+  });
+}
+
+function reply(raw){
+  const t=raw.toLowerCase(),m=find(t),n=parseInt(((m?t.replace(m.n.toLowerCase(),""):t).match(/\d+/)||[])[0]);
+  if(/encomend|entreg/.test(t)){
+    if(!m||m.brand!=="Tesla")return"Encomendas e entregas são só para Tesla (via tesla.com). Qual modelo: Model 3 ou Model Y?";
+    const q=Number.isNaN(n)?1:n;
+    if(/entreg/.test(t)){if(m.ord<q)return"Só há "+m.ord+" "+m.n+" por entregar.";m.ord-=q;m.sold+=q;render();return"Entrega registada: "+q+"× Tesla "+m.n+". Conta para a meta."}
+    m.ord+=q;render();return"Encomenda registada em tesla.com: "+q+"× Tesla "+m.n+". Pendentes: "+m.ord+"."
+  }
+  if(/vend(i|a|eu|emos)/.test(t)){
+    if(!m)return"Qual modelo foi vendido: Urban, Trail, Volt, Model 3 ou Model Y?";
+    const q=Number.isNaN(n)?1:n;
+    if(m.brand==="CarF"&&m.stock<q)return"Só há "+m.stock+" "+m.n+" em stock. Não consigo registar "+q+".";
+    m.sold+=q;if(m.brand==="CarF")m.stock-=q;render();
+    return"Venda registada: "+q+"× "+m.brand+" "+m.n+". Faltam "+Math.max(0,S.goal-total())+" carros para a meta."+(m.brand==="Tesla"?"\nLembrete: a encomenda tem de estar feita em tesla.com.":(m.stock<=3?"\nAtenção: stock de "+m.n+" baixo ("+m.stock+").":""));
+  }
+  if(/meta|objetivo/.test(t)&&!Number.isNaN(n)){S.goal=n;render();return"Meta mensal atualizada para "+n+" carros."}
+  if(/campanha|desconto|promo/.test(t)){
+    if(!m)return"Para que modelo? Ex.: “campanha Trail 5%”.";
+    if(m.brand==="Tesla")return"Os preços Tesla são definidos em tesla.com; o stand não pode aplicar campanhas.";
+    m.promo=Number.isNaN(n)?5:Math.min(n,30);render();
+    return"Campanha ativa no CarF "+m.n+": -"+m.promo+"%. Preço atual "+eur(Math.round(m.price*(1-m.promo/100)))+".";
+  }
+  if(/test.?drive/.test(t)){S.td+=Number.isNaN(n)?1:n;render();return"Test drive registado. Total do mês: "+S.td+"."}
+  if(/lead|cliente/.test(t)){S.leads+=Number.isNaN(n)?1:n;render();return"Lead adicionada. Tem "+S.leads+" leads ativas."}
+  if(/stock|invent/.test(t))return S.models.map(x=>x.brand+" "+x.n+": "+(x.brand==="Tesla"?x.ord+" por entregar (tesla.com)":x.stock+" em stock")).join("\n");
+  if(/resumo|ponto|como est/.test(t)){
+    const best=[...S.models].sort((a,b)=>b.sold-a.sold)[0];
+    return"Vendas: "+total()+" de "+S.goal+" ("+Math.round(total()/S.goal*100)+"%).\nMais vendido: "+best.n+".\nLeads: "+S.leads+" · Test drives: "+S.td+".";
+  }
+  return"Não percebi. Experimente: “vendi um Trail”, “encomenda Model Y”, “entrega Model 3”, “stock”, “campanha Volt 8%”, “meta 40”, “novo lead” ou “resumo”.";
+}
+
+function send(text){
+  text=(text||$("in").value).trim();if(!text)return;
+  add(text,"u");$("in").value="";
+  setTimeout(()=>add(reply(text),"b"),500);
+}
+function add(t,c){const d=document.createElement("div");d.className="m "+c;d.textContent=t;$("box").appendChild(d);$("box").scrollTop=$("box").scrollHeight}
+$("send").onclick=()=>send();
+$("in").onkeydown=e=>{if(e.key==="Enter")send()};
+["Vendi um Urban","Encomenda Model Y","Entrega Model 3","Campanha Trail 5%","Stock","Resumo"].forEach(s=>{
+  const b=document.createElement("button");b.textContent=s;b.onclick=()=>send(s);$("chips").appendChild(b)});
+render();
+</script>
+</body>
+</html>
