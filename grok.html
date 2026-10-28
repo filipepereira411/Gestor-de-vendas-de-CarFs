@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Emulator</title>
+    <style>
+        :root {
+            --bg-grok: #0b0b0c;
+            --border-grok: #2c2c2e;
+            --accent-grok: #2f80ed;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --chat-bubble-bot: #1c1c1e;
+            --chat-bubble-user: #2f80ed20;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: var(--bg-grok);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-grok);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header .logo {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+        .chat-header .status {
+            width: 8px;
+            height: 8px;
+            background-color: #34c759;
+            border-radius: 50%;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .message.bot {
+            background-color: var(--chat-bubble-bot);
+            align-self: flex-start;
+            border: 1px solid var(--border-grok);
+        }
+        .message.user {
+            background-color: var(--chat-bubble-user);
+            align-self: flex-end;
+            border: 1px solid rgba(47, 128, 237, 0.3);
+        }
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            padding: 10px 20px;
+            overflow-x: auto;
+        }
+        .suggestion-btn {
+            background: none;
+            border: 1px solid var(--border-grok);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .suggestion-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid var(--border-grok);
+        }
+        .input-wrapper {
+            display: flex;
+            background-color: #1c1c1e;
+            border: 1px solid var(--border-grok);
+            border-radius: 24px;
+            padding: 6px 6px 6px 16px;
+            align-items: center;
+        }
+        input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+        input::placeholder {
+            color: var(--text-muted);
+        }
+        .send-btn {
+            background-color: var(--accent-grok);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <div class="logo">GROK</div>
+        <div class="status"></div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+            Olá! Sou o Grok. Posso controlar o teu Tesla Model Y. O que precisas?
+        </div>
+    </div>
+
+    <div class="suggestions">
+        <button class="suggestion-btn" onclick="sendPreset('Ligar o ar condicionado nos 23°C', {clima: '23°C'})">🌡️ AC para 23°C</button>
+        <button class="suggestion-btn" onclick="sendPreset('Viajar para a Praia da Nazaré', {route: 'Praia da Nazaré'})">📍 Rota: Nazaré</button>
+        <button class="suggestion-btn" onclick="sendPreset('Ativar Modo Desportivo', {persona: 'Desportivo'})">⚡ Modo Desportivo</button>
+        <button class="suggestion-btn" onclick="sendPreset('Preparar bateria para Supercharger', {battery: true})">🔋 Aquecer Bateria</button>
+    </div>
+
+    <div class="chat-input-container">
+        <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Pergunta ao Grok ou controla o carro..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="processText()">→</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+
+        // Envia os comandos para a janela principal (Pai)
+        function sendCarUpdate(commands) {
+            window.parent.postMessage({
+                action: 'update_car',
+                ...commands
+            }, '*');
+        }
+
+        function appendMessage(text, side) {
+            const msg = document.createElement('div');
+            msg.className = `message ${side}`;
+            msg.textContent = text;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Executado ao clicar nos botões de sugestão rápida
+        function sendPreset(text, commands) {
+            appendMessage(text, 'user');
+            setTimeout(() => {
+                appendMessage("Comando processado com sucesso. A atualizar o painel do Model Y...", 'bot');
+                sendCarUpdate(commands);
+            }, 600);
+        }
+
+        // Processa o texto livre escrito pelo utilizador
+        function processText() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            setTimeout(() => {
+                let response = "Comando não reconhecido pelo sistema do veículo. Tenta usar as sugestões rápidas.";
+                let lowerText = text.toLowerCase();
+
+                // Processamento de linguagem natural básico (RegEx/Keywords)
+                if (lowerText.includes('temperatura') || lowerText.includes('graus') || lowerText.includes('ac')) {
+                    const match = lowerText.match(/\d+/);
+                    const temp = match ? match[0] + '°C' : '22°C';
+                    response = `A ajustar o ar condicionado para ${temp}.`;
+                    sendCarUpdate({ clima: temp });
+                } 
+                else if (lowerText.includes('ir para') || lowerText.includes('rota') || lowerText.includes('destino')) {
+                    const destino = text.replace(/(ir para|rota para|definir destino para)/i, '').trim();
+                    response = `A calcular rota ideal para: ${destino || 'Lisboa'}.`;
+                    sendCarUpdate({ route: destino || 'Lisboa' });
+                }
+                else if (lowerText.includes('bateria') || lowerText.includes('carregar') || lowerText.includes('supercharger')) {
+                    response = "Pré-aquecimento da bateria iniciado para carregamento rápido.";
+                    sendCarUpdate({ battery: true });
+                }
+                else if (lowerText.includes('modo') || lowerText.includes('persona')) {
+                    let modo = "Clássica";
+                    if (lowerText.includes('desportivo') || lowerText.includes('sport')) modo = "Desportivo";
+                    if (lowerText.includes('eco') || lowerText.includes('poupança')) modo = "Económico";
+                    response = `Perfil do veículo alterado para o modo ${modo}.`;
+                    sendCarUpdate({ persona: modo });
+                }
+
+                appendMessage(response, 'bot');
+            }, 800);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') processText();
+        }
+    </script>
+</body>
+</html>
