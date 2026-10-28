@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Grok Co-Pilot Interface</title>
+    <style>
+        :root {
+            --bg-chat: #121214;
+            --input-bg: #1c1c1e;
+            --text-grok: #3d5afe;
+            --border: #2c2c2e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body {
+            background-color: var(--bg-chat);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border);
+        }
+        .header {
+            padding: 20px;
+            background: #18181a;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dot { width: 8px; height: 8px; background: #00ff66; border-radius: 50%; }
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .msg {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .user { background: #2c2c2e; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .grok { background: rgba(61, 90, 254, 0.1); border: 1px solid var(--text-grok); align-self: flex-start; border-bottom-left-radius: 2px; }
+        
+        .input-area {
+            padding: 20px;
+            background: #18181a;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+        button {
+            background: var(--text-grok);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="dot"></div>
+        <strong>Grok Bot</strong> <span>(AI Copiloto Ativo)</span>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="msg grok">Olá! Sou o Grok Bot do seu Tesla. O que gostaria de ajustar no veículo ou na sua rota de hoje? Try: "liga o ar condicionado" ou "ativa modo terapeuta".</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Fale com o Grok Bot..." onkeypress="handleKey(event)">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+
+        function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // Adiciona mensagem do Utilizador
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            // Inteligência e Sincronização Simples do Grok
+            setTimeout(() => {
+                let reply = "Comando não reconhecido. Tente pedir para ajustar o AC, mudar de rota ou ativar o terapeuta.";
+                let carCommands = {};
+
+                const inputLower = text.toLowerCase();
+
+                if (inputLower.includes('ar condicionado') || inputLower.includes('clima') || inputLower.includes('temperatura')) {
+                    reply = "Climatização atualizada para 21°C. Conforto térmico garantido.";
+                    carCommands = { clima: "21°C ❄️" };
+                } 
+                else if (inputLower.includes('rota') || inputLower.includes('caminho') || inputLower.includes('ir para')) {
+                    reply = "Rota recalculada com base no trânsito atualizado via GPS Tesla.";
+                    carCommands = { route: "Lisboa (Evitando trânsito)" };
+                } 
+                else if (inputLower.includes('terapeuta') || inputLower.includes('relaxar')) {
+                    reply = "Modo Terapeuta ativado. Luzes ambiente suavizadas e batidas relaxantes prontas.";
+                    carCommands = { persona: "Terapeuta 🧘‍♂️" };
+                }
+                else if (inputLower.includes('bateria') || inputLower.includes('carregar')) {
+                    reply = "Modo de pré-aquecimento iniciado. Chegará ao Supercharger com a bateria na temperatura ideal de carregamento rápido.";
+                    carCommands = { battery: true };
+                }
+
+                appendMessage(reply, 'grok');
+
+                // Envia dados para o ficheiro pai (carro.html) atualizar os botões físicos
+                if (Object.keys(carCommands).length > 0) {
+                    window.parent.postMessage({ action: 'update_car', ...carCommands }, '*');
+                }
+
+            }, 800);
+        }
+
+        function appendMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `msg ${sender}`;
+            div.textContent = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
