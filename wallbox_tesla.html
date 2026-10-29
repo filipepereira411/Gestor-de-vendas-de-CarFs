@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tesla Model Y & Wallbox Integration</title>
+    <title>Tesla Model Y - Painel de Carregamento Wallbox</title>
     <style>
         :root {
             --bg-color: #0b0b0c;
             --panel-color: #18181a;
             --border-color: #2c2c2e;
+            --accent-red: #cc0000;
+            --accent-green: #00cc66;
             --accent-blue: #2f80ed;
-            --accent-green: #219653;
             --text-main: #ffffff;
             --text-muted: #8e8e93;
         }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -29,100 +32,153 @@
             gap: 20px;
             overflow: hidden;
         }
-        /* Grid de Painéis Esquerdos */
-        .left-container {
-            flex: 1.2;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: 100%;
-        }
-        .panel {
+
+        /* Lado Esquerdo: Estado da Wallbox e Carro */
+        .charger-status {
+            flex: 1;
             background-color: var(--panel-color);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 24px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        .car-status { flex: 1.2; }
-        .wallbox-status { flex: 0.8; }
 
-        .panel-header h1 {
-            font-size: 24px;
-            font-weight: 400;
-            letter-spacing: 1px;
-        }
-        .panel-header p {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-        
-        .visualizer-container {
+        .charger-header {
             display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex: 1;
-            margin: 15px 0;
+            justify-content: space-between;
+            align-items: flex-start;
         }
+
+        .charger-header h1 {
+            font-size: 26px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .charger-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .brand-logo {
+            color: var(--accent-red);
+            font-weight: bold;
+            font-size: 24px;
+            letter-spacing: 2px;
+        }
+
         .visualizer {
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 140px;
-            height: 140px;
-            background: radial-gradient(circle, rgba(47,128,237,0.1) 0%, transparent 70%);
+            margin: 30px 0;
+            background: radial-gradient(circle, rgba(0,204,102,0.1) 0%, transparent 70%);
             border-radius: 50%;
             position: relative;
         }
-        .wallbox-status .visualizer {
-            background: radial-gradient(circle, rgba(33,150,83,0.1) 0%, transparent 70%);
+
+        .charge-battery {
+            font-size: 80px;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite ease-in-out;
         }
-        .display-icon { font-size: 48px; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
+
+        .charge-percentage {
+            font-size: 48px;
+            font-weight: 300;
+        }
+
         .indicator {
+            position: absolute;
+            bottom: -10px;
             background: rgba(255,255,255,0.05);
-            padding: 4px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 14px;
             border: 1px solid var(--border-color);
-            margin-top: 8px;
-            text-align: center;
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.02);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 4px;
         }
 
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 15px;
         }
+
         .btn {
             background-color: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 12px;
+            padding: 15px;
             border-radius: 10px;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
-            text-align: left;
+            text-align: center;
+            font-weight: 500;
         }
+
         .btn:hover {
             background-color: rgba(255,255,255,0.1);
             border-color: var(--text-muted);
         }
-        .btn.active-blue {
-            border-color: var(--accent-blue);
-            background-color: rgba(47,128,237,0.1);
-        }
-        .btn.active-green {
+
+        .btn.active {
             border-color: var(--accent-green);
-            background-color: rgba(33,150,83,0.1);
+            background-color: rgba(0, 204, 102, 0.1);
+            color: var(--accent-green);
+        }
+
+        .btn.stop {
+            border-color: var(--accent-red);
+            background-color: rgba(204, 0, 0, 0.1);
+            color: var(--accent-red);
         }
 
         /* Lado Direito: Emulador do Grok via Iframe */
         .grok-system {
-            flex: 1;
+            flex: 1.2;
             background-color: var(--panel-color);
             border: 1px solid var(--border-color);
             border-radius: 16px;
@@ -130,6 +186,7 @@
             display: flex;
             flex-direction: column;
         }
+
         iframe {
             width: 100%;
             height: 100%;
@@ -139,49 +196,47 @@
 </head>
 <body>
 
-    <!-- LADO ESQUERDO: VEÍCULO E WALLBOX -->
-    <div class="left-container">
-        
-        <!-- PAINEL DO CARRO -->
-        <div class="panel car-status">
-            <div class="panel-header">
-                <h1>Model Y</h1>
-                <p>Sincronizado com Grok Bot v2026.26</p>
-            </div>
-            <div class="visualizer-container">
-                <div class="visualizer">
-                    <div class="display-icon">🚗</div>
-                    <div class="indicator" id="car-mode">Modo: Standard</div>
-                </div>
-            </div>
-            <div class="controls-grid">
-                <button class="btn" id="btn-clima">AC: 21°C</button>
-                <button class="btn" id="btn-route">Rota: Nenhuma</button>
-                <button class="btn" id="btn-battery">Pré-aquecer Bateria</button>
-                <button class="btn" id="btn-persona">Persona: Clássica</button>
-            </div>
-        </div>
-
-        <!-- PAINEL DA WALLBOX -->
-        <div class="panel wallbox-status">
-            <div class="panel-header">
+    <!-- CONTROLOS DE CARREGAMENTO (WALLBOX) -->
+    <div class="charger-status">
+        <div class="charger-header">
+            <div>
                 <h1>Tesla Wall Connector</h1>
-                <p>Gestor de Energia Inteligente</p>
+                <p>Sincronizado com Grok Energy Bot</p>
             </div>
-            <div class="visualizer-container">
-                <div class="visualizer">
-                    <div class="display-icon">⚡</div>
-                    <div class="indicator" id="wallbox-state">Estado: Pronto</div>
-                </div>
+            <div class="brand-logo">TESLA</div>
+        </div>
+
+        <div class="visualizer">
+            <div class="charge-battery" id="charge-icon">🔋</div>
+            <div class="charge-percentage" id="charge-pct">82%</div>
+            <div class="indicator" id="charge-mode">Estado: A carregar</div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <span class="metric-label">Potência</span>
+                <span class="metric-value" id="val-power">11.0 kW</span>
             </div>
-            <div class="controls-grid">
-                <button class="btn" id="btn-charge-rate">Corrente: 16A</button>
-                <button class="btn" id="btn-charge-limit">Limite: 80%</button>
-                <button class="btn" id="btn-wallbox-power">Potência: 11 kW</button>
-                <button class="btn" id="btn-schedule">Programar: Off</button>
+            <div class="metric-box">
+                <span class="metric-label">Amperagem</span>
+                <span class="metric-value" id="val-amps">16A (Trifásico)</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Velocidade</span>
+                <span class="metric-value" id="val-speed">~65 km/h</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Limite Limiar</span>
+                <span class="metric-value" id="val-limit">90%</span>
             </div>
         </div>
 
+        <div class="controls-grid">
+            <button class="btn active" id="btn-state" onclick="toggleCharge()">Pausar Carga</button>
+            <button class="btn" id="btn-limit">Limite: 90%</button>
+            <button class="btn" id="btn-amps">Corrente: 16A</button>
+            <button class="btn" id="btn-schedule">Programar: Off</button>
+        </div>
     </div>
 
     <!-- SISTEMA INTERATIVO GROK -->
@@ -191,44 +246,56 @@
 
     <script>
         const grokFrame = document.getElementById('grokFrame');
-        
-        // Escuta os comandos unificados enviados de dentro do chat do Grok
+        let isCharging = true;
+
+        function toggleCharge() {
+            const btn = document.getElementById('btn-state');
+            const mode = document.getElementById('charge-mode');
+            const power = document.getElementById('val-power');
+            const speed = document.getElementById('val-speed');
+            const icon = document.getElementById('charge-icon');
+
+            if (isCharging) {
+                // Pausar
+                isCharging = false;
+                btn.textContent = "Iniciar Carga";
+                btn.className = "btn stop";
+                mode.textContent = "Estado: Pausado";
+                mode.style.color = "var(--accent-red)";
+                power.textContent = "0.0 kW";
+                speed.textContent = "0 km/h";
+                icon.style.animation = "none";
+            } else {
+                // Retomar
+                isCharging = true;
+                btn.textContent = "Pausar Carga";
+                btn.className = "btn active";
+                mode.textContent = "Estado: A carregar";
+                mode.style.color = "var(--accent-green)";
+                power.textContent = "11.0 kW";
+                speed.textContent = "~65 km/h";
+                icon.style.animation = "pulse 2s infinite ease-in-out";
+            }
+        }
+
+        // Escuta comandos avançados enviados de dentro do chat do Grok (via postMessage)
         window.addEventListener('message', function(event) {
             const data = event.data;
-            
-            // Comandos direcionados ao Veículo
-            if (data.action === 'update_car') {
-                if (data.clima) document.getElementById('btn-clima').textContent = `AC: ${data.clima}`;
-                if (data.route) document.getElementById('btn-route').textContent = `Rota: ${data.route}`;
-                if (data.battery) {
-                    const btn = document.getElementById('btn-battery');
-                    btn.classList.add('active-blue');
-                    btn.textContent = "Bateria a Otimizar 🔋";
-                }
-                if (data.persona) {
-                    document.getElementById('btn-persona').textContent = `Persona: ${data.persona}`;
-                    document.getElementById('car-mode').textContent = `Modo: ${data.persona}`;
-                }
-            }
-            
-            // Comandos direcionados à Wallbox
             if (data.action === 'update_charger') {
-                if (data.current) document.getElementById('btn-charge-rate').textContent = `Corrente: ${data.current}A`;
-                if (data.limit) document.getElementById('btn-charge-limit').textContent = `Limite: ${data.limit}%`;
-                if (data.power) document.getElementById('btn-wallbox-power').textContent = `Potência: ${data.power}`;
+                if (data.power) document.getElementById('val-power').textContent = data.power;
+                if (data.amps) {
+                    document.getElementById('val-amps').textContent = `${data.amps}A`;
+                    document.getElementById('btn-amps').textContent = `Corrente: ${data.amps}A`;
+                }
+                if (data.limit) {
+                    document.getElementById('val-limit').textContent = `${data.limit}%`;
+                    document.getElementById('btn-limit').textContent = `Limite: ${data.limit}%`;
+                    document.getElementById('charge-pct').textContent = `${Math.min(82, data.limit)}%`; 
+                }
                 if (data.schedule) document.getElementById('btn-schedule').textContent = `Programar: ${data.schedule}`;
                 
-                if (data.state) {
-                    const stateIndicator = document.getElementById('wallbox-state');
-                    stateIndicator.textContent = `Estado: ${data.state}`;
-                    
-                    const powerBtn = document.getElementById('btn-wallbox-power');
-                    if(data.state.toLowerCase().includes('carregar')) {
-                        powerBtn.classList.add('active-green');
-                    } else {
-                        powerBtn.classList.remove('active-green');
-                    }
-                }
+                if (data.state === 'stop' && isCharging) toggleCharge();
+                if (data.state === 'start' && !isCharging) toggleCharge();
             }
         });
     </script>
